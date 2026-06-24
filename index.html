@@ -102,7 +102,7 @@
     <strong>Orientation:</strong> Hold your cube with Green facing you and White on top.</p>
 
     <div class="palette" id="palette">
-        <div class="palette-color" style="background-color: #ffffff;" data-color="white"></div>
+        <div class="palette-color selected" style="background-color: #ffffff;" data-color="white"></div>
         <div class="palette-color" style="background-color: #b71212;" data-color="red"></div>
         <div class="palette-color" style="background-color: #124cb7;" data-color="blue"></div>
         <div class="palette-color" style="background-color: #e66e12;" data-color="orange"></div>
@@ -129,78 +129,3 @@
 
     <button class="solve-btn" onclick="solveCube()">Find Solution</button>
     <div class="output" id="output">Your solution moves will appear here.</div>
-
-    <script src="https://cdn.jsdelivr.net/gh/ldez/cubejs@1.3.1/lib/cube.js"></script>
-    <script>
-        const colors = {
-            white: '#ffffff', red: '#b71212', blue: '#124cb7', 
-            orange: '#e66e12', green: '#12b730', yellow: '#eed612'
-        };
-        const colorToFaceMap = {
-            'white': 'U', 'red': 'R', 'green': 'F', 
-            'yellow': 'D', 'orange': 'L', 'blue': 'B'
-        };
-
-        let selectedColor = 'white';
-
-        document.getElementById('palette').addEventListener('click', (e) => {
-            if (e.target.classList.contains('palette-color')) {
-                document.querySelectorAll('.palette-color').forEach(el => el.classList.remove('selected'));
-                e.target.classList.add('selected');
-                selectedColor = e.target.dataset.color;
-            }
-        });
-
-        const faceLayouts = {
-            'U': ['white','white','white','white','white','white','white','white','white'],
-            'L': ['orange','orange','orange','orange','orange','orange','orange','orange','orange'],
-            'F': ['green','green','green','green','green','green','green','green','green'],
-            'R': ['red','red','red','red','red','red','red','red','red'],
-            'B': ['blue','blue','blue','blue','blue','blue','blue','blue','blue'],
-            'D': ['yellow','yellow','yellow','yellow','yellow','yellow','yellow','yellow','yellow']
-        };
-
-        ['U', 'L', 'F', 'R', 'B', 'D'].forEach(face => {
-            const faceContainer = document.getElementById(`face-${face}`);
-            for (let i = 0; i < 9; i++) {
-                const sticker = document.createElement('div');
-                sticker.classList.add('sticker');
-                sticker.dataset.face = face;
-                sticker.id = `sticker-${face}-${i}`;
-                
-                const startingColor = faceLayouts[face][i];
-                sticker.style.backgroundColor = colors[startingColor];
-                sticker.dataset.color = startingColor;
-
-                sticker.addEventListener('click', (e) => {
-                    if (i === 4) return; 
-                    e.target.style.backgroundColor = colors[selectedColor];
-                    e.target.dataset.color = selectedColor;
-                });
-                faceContainer.appendChild(sticker);
-            }
-        });
-
-        // Initialize library tables
-        Cube.initSolver();
-
-        function getVal(face, idx) {
-            const el = document.getElementById(`sticker-${face}-${idx}`);
-            return colorToFaceMap[el.dataset.color];
-        }
-
-        function solveCube() {
-            const output = document.getElementById('output');
-            
-            // Hardmapped geometric definitions matching standard 3D spatial orientation matrices.
-            // Accounts for relative internal rotation parameters when unfolded 2D projections occur.
-            let faceletString = "";
-            
-            // Up face
-            for(let i=0; i<9; i++) faceletString += getVal('U', i);
-            // Right face
-            for(let i=0; i<9; i++) faceletString += getVal('R', i);
-            // Front face
-            for(let i=0; i<9; i++) faceletString += getVal('F', i);
-            // Down face
-            for(let i=0
