@@ -184,53 +184,23 @@
         // Initialize library tables
         Cube.initSolver();
 
-        function getStickerChar(face, index) {
-            const el = document.getElementById(`sticker-${face}-${index}`);
+        function getVal(face, idx) {
+            const el = document.getElementById(`sticker-${face}-${idx}`);
             return colorToFaceMap[el.dataset.color];
         }
 
         function solveCube() {
             const output = document.getElementById('output');
             
-            // Absolute Kociemba standard geometry string mapping format:
-            // U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9
-            // Corrects 2D flat cross representation inconsistencies natively.
+            // Hardmapped geometric definitions matching standard 3D spatial orientation matrices.
+            // Accounts for relative internal rotation parameters when unfolded 2D projections occur.
             let faceletString = "";
             
-            // 1. Up Face (Standard 0-8)
-            for(let i=0; i<9; i++) faceletString += getStickerChar('U', i);
-            
-            // 2. Right Face (Standard 0-8)
-            for(let i=0; i<9; i++) faceletString += getStickerChar('R', i);
-            
-            // 3. Front Face (Standard 0-8)
-            for(let i=0; i<9; i++) faceletString += getStickerChar('F', i);
-            
-            // 4. Down Face (Standard 0-8)
-            for(let i=0; i<9; i++) faceletString += getStickerChar('D', i);
-            
-            // 5. Left Face (Standard 0-8)
-            for(let i=0; i<9; i++) faceletString += getStickerChar('L', i);
-            
-            // 6. Back Face (Rotated 180 degrees structurally relative to the flat 2D net unfolded view)
-            const bMap = [8, 7, 6, 5, 4, 3, 2, 1, 0];
-            for(let i of bMap) faceletString += getStickerChar('B', i);
-
-            try {
-                const parsedCube = Cube.fromString(faceletString);
-                
-                if (parsedCube.isSolved()) {
-                    output.innerHTML = `<strong>Cube is already solved!</strong><br><span style="color:#28a745; font-weight:bold;">No moves required.</span>`;
-                    return;
-                }
-
-                const solutionMoves = parsedCube.solve();
-                output.innerHTML = `<strong>Solution Found!</strong><br><span style="color:#007bff; font-weight:bold; font-size:18px;">${solutionMoves}</span><br><br><small style="color:#666;">Hold cube with Green in Front and White on Top.</small>`;
-                
-            } catch (error) {
-                output.innerHTML = "<strong style='color: #b71212;'>Error: Invalid Cube Layout!</strong><br><span style='font-size:14px; color:#555;'>Check your colors carefully. This exact layout is physically impossible.</span>";
-            }
-        }
-    </script>
-</body>
-</html>
+            // Up face
+            for(let i=0; i<9; i++) faceletString += getVal('U', i);
+            // Right face
+            for(let i=0; i<9; i++) faceletString += getVal('R', i);
+            // Front face
+            for(let i=0; i<9; i++) faceletString += getVal('F', i);
+            // Down face
+            for(let i=0
