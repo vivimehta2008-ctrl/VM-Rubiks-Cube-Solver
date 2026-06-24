@@ -152,10 +152,18 @@
         });
         document.querySelector('[data-color="white"]').classList.add('selected');
 
-        // Build the stickers layout dynamically
+        // Build the stickers layout dynamically with exact coordinate maps
+        const faceLayouts = {
+            'U': ['white','white','white','white','white','white','white','white','white'],
+            'L': ['orange','orange','orange','orange','orange','orange','orange','orange','orange'],
+            'F': ['green','green','green','green','green','green','green','green','green'],
+            'R': ['red','red','red','red','red','red','red','red','red'],
+            'B': ['blue','blue','blue','blue','blue','blue','blue','blue','blue'],
+            'D': ['yellow','yellow','yellow','yellow','yellow','yellow','yellow','yellow','yellow']
+        };
+
         ['U', 'L', 'F', 'R', 'B', 'D'].forEach(face => {
             const faceContainer = document.getElementById(`face-${face}`);
-            const centerColors = { 'U': 'white', 'L': 'orange', 'F': 'green', 'R': 'red', 'B': 'blue', 'D': 'yellow' };
             
             for (let i = 0; i < 9; i++) {
                 const sticker = document.createElement('div');
@@ -163,17 +171,13 @@
                 sticker.dataset.face = face;
                 sticker.id = `sticker-${face}-${i}`;
                 
-                // Locks center color indicators to match Western Scheme layout rules
-                if (i === 4) {
-                    sticker.style.backgroundColor = colors[centerColors[face]];
-                    sticker.dataset.color = centerColors[face];
-                } else {
-                    // Optional fallback starting color (gray defaults)
-                    sticker.dataset.color = '';
-                }
+                // Pre-paint the entire solved state layout automatically
+                const startingColor = faceLayouts[face][i];
+                sticker.style.backgroundColor = colors[startingColor];
+                sticker.dataset.color = startingColor;
 
                 sticker.addEventListener('click', (e) => {
-                    if (i === 4) return; // Prevent updating structural center pieces
+                    if (i === 4) return; // Keep structural center locked
                     e.target.style.backgroundColor = colors[selectedColor];
                     e.target.dataset.color = selectedColor;
                 });
@@ -183,7 +187,6 @@
 
         // Initialize solver engine
         Cube.initSolver();
-
         function solveCube() {
             const output = document.getElementById('output');
             let faceletString = '';
