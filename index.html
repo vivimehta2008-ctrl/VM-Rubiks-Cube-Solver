@@ -169,15 +169,38 @@
             }
         });
 
-        // Simple mock solver function for UI demonstration
-        function solveCube() {
-            const output = document.getElementById('output');
-            
-            // In a production app, you would gather data-color from all stickers here
-            // e.g., document.querySelectorAll('.sticker').map(...) 
-            
-            output.innerHTML = "<strong>Solution found:</strong><br>F R' U L F2 R U2 B' R2 F' (Demo String)";
+        // Updated function to read the actual colors you painted
+function solveCube() {
+    const output = document.getElementById('output');
+    const stickers = document.querySelectorAll('.sticker');
+    
+    // Create an array to hold the state map
+    let faceletRepresentation = [];
+    let complete = true;
+
+    stickers.forEach(sticker => {
+        const color = sticker.dataset.color;
+        if (!color) {
+            complete = false;
         }
+        faceletRepresentation.push({
+            face: sticker.dataset.face,
+            index: sticker.dataset.index,
+            color: color
+        });
+    });
+
+    if (!complete) {
+        output.innerHTML = "<strong style='color: #b71212;'>Error: Please paint all 54 squares before solving!</strong>";
+        return;
+    }
+
+    // This logs the precise user layout to your developer console for verification
+    console.log("Current Cube State Array:", faceletRepresentation);
+
+    // Phase 2 target integration message
+    output.innerHTML = "<strong>UI State Captured!</strong><br>Ready to pass matrix to Kociemba solver API.";
+}
     </script>
 </body>
 </html>
