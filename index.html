@@ -184,25 +184,34 @@
         // Initialize background tables
         Cube.initSolver();
 
+        function getFaceletColorCharacter(face, index) {
+            const el = document.getElementById(`sticker-${face}-${index}`);
+            return colorToFaceMap[el.dataset.color];
+        }
+
         function solveCube() {
             const output = document.getElementById('output');
             
-            // Map 2D indices explicitly to 3D standard math orientation
-            const uIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            const rIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            const fIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            const dIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            const lIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            const bIndices = [2, 1, 0, 5, 4, 3, 8, 7, 6]; 
+            // Standard Kociemba layout order: U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9
+            // Adjust mappings dynamically based on flat 2D UI projections
+            let uStr = "", rStr = "", fStr = "", dStr = "", lStr = "", bStr = "";
             
-            let uStr = '', rStr = '', fStr = '', dStr = '', lStr = '', bStr = '';
+            for(let i=0; i<9; i++) uStr += getFaceletColorCharacter('U', i);
+            for(let i=0; i<9; i++) rStr += getFaceletColorCharacter('R', i);
+            for(let i=0; i<9; i++) fStr += getFaceletColorCharacter('F', i);
+            for(let i=0; i<9; i++) dStr += getFaceletColorCharacter('D', i);
+            for(let i=0; i<9; i++) lStr += getFaceletColorCharacter('L', i);
             
-            for(let i of uIndices) uStr += colorToFaceMap[document.getElementById(`sticker-U-${i}`).dataset.color];
-            for(let i of rIndices) rStr += colorToFaceMap[document.getElementById(`sticker-R-${i}`).dataset.color];
-            for(let i of fIndices) fStr += colorToFaceMap[document.getElementById(`sticker-F-${i}`).dataset.color];
-            for(let i of dIndices) dStr += colorToFaceMap[document.getElementById(`sticker-D-${i}`).dataset.color];
-            for(let i of lIndices) lStr += colorToFaceMap[document.getElementById(`sticker-L-${i}`).dataset.color];
-            for(let i of bIndices) bStr += colorToFaceMap[document.getElementById(`sticker-B-${i}`).dataset.color];
+            // Back face corrections for flattening geometry
+            bStr += getFaceletColorCharacter('B', 2);
+            bStr += getFaceletColorCharacter('B', 1);
+            bStr += getFaceletColorCharacter('B', 0);
+            bStr += getFaceletColorCharacter('B', 5);
+            bStr += getFaceletColorCharacter('B', 4);
+            bStr += getFaceletColorCharacter('B', 3);
+            bStr += getFaceletColorCharacter('B', 8);
+            bStr += getFaceletColorCharacter('B', 7);
+            bStr += getFaceletColorCharacter('B', 6);
             
             const faceletString = uStr + rStr + fStr + dStr + lStr + bStr;
 
