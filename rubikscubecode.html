@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Rubik's Cube Solver</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 { margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 20px; }
+
+        /* Color Palette Styles */
+        .palette {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .palette-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.1s;
+        }
+
+        .palette-color:hover { transform: scale(1.1); }
+        .palette-color.selected { border-color: #333; }
+
+        /* 2D Cube Net Layout */
+        .cube-net {
+            display: grid;
+            grid-template-columns: repeat(4, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .face {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            background-color: #222;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        /* Empty grid spaces in the 2D net */
+        .empty { visibility: hidden; }
+
+        .sticker {
+            background-color: #ddd;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        /* Controls */
+        .solve-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,123,255,0.2);
+        }
+
+        .solve-btn:hover { background-color: #0056b3; }
+
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Rubik's Cube Solver</h1>
+    <p>Select a color from the palette, paint your cube net, and hit Solve!</p>
+
+    <div class="palette" id="palette">
+        <div class="palette-color" style="background-color: #ffffff;" data-color="white"></div>
+        <div class="palette-color" style="background-color: #b71212;" data-color="red"></div>
+        <div class="palette-color" style="background-color: #124cb7;" data-color="blue"></div>
+        <div class="palette-color" style="background-color: #e66e12;" data-color="orange"></div>
+        <div class="palette-color" style="background-color: #12b730;" data-color="green"></div>
+        <div class="palette-color" style="background-color: #eed612;" data-color="yellow"></div>
+    </div>
+
+    <div class="cube-net">
+        <div class="empty"></div>
+        <div class="face" id="face-U"></div> <div class="empty"></div>
+        <div class="empty"></div>
+
+        <div class="face" id="face-L"></div> <div class="face" id="face-F"></div> <div class="face" id="face-R"></div> <div class="face" id="face-B"></div> <div class="empty"></div>
+        <div class="face" id="face-D"></div> <div class="empty"></div>
+        <div class="empty"></div>
+    </div>
+
+    <button class="solve-btn" onclick="solveCube()">Find Solution</button>
+    <div class="output" id="output">Your solution moves will appear here.</div>
+
+    <script>
+        const faces = ['U', 'L', 'F', 'R', 'B', 'D'];
+        const colors = {
+            white: '#ffffff', red: '#b71212', blue: '#124cb7', 
+            orange: '#e66e12', green: '#12b730', yellow: '#eed612'
+        };
+        
+        let selectedColor = 'white';
+
+        // Initialize Palette
+        document.getElementById('palette').addEventListener('click', (e) => {
+            if (e.target.classList.contains('palette-color')) {
+                document.querySelectorAll('.palette-color').forEach(el => el.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedColor = e.target.dataset.color;
+            }
+        });
+        // Set default selected palette item
+        document.querySelector('[data-color="white"]').classList.add('selected');
+
+        // Generate the stickers for each face
+        faces.forEach(face => {
+            const faceContainer = document.getElementById(`face-${face}`);
+            for (let i = 0; i < 9; i++) {
+                const sticker = document.createElement('div');
+                sticker.classList.add('sticker');
+                sticker.dataset.face = face;
+                sticker.dataset.index = i;
+                
+                // Optional: Pre-paint centers to guide the user (Standard Western Color Scheme)
+                if (i === 4) {
+                    const centerColors = { 'U': 'white', 'L': 'orange', 'F': 'green', 'R': 'red', 'B': 'blue', 'D': 'yellow' };
+                    sticker.style.backgroundColor = colors[centerColors[face]];
+                    sticker.dataset.color = centerColors[face];
+                }
+
+                sticker.addEventListener('click', (e) => {
+                    // Prevent changing center pieces if you want to lock the orientation
+                    if (i === 4) return; 
+                    e.target.style.backgroundColor = colors[selectedColor];
+                    e.target.dataset.color = selectedColor;
+                });
+                faceContainer.appendChild(sticker);
+            }
+        });
+
+        // Simple mock solver function for UI demonstration
+        function solveCube() {
+            const output = document.getElementById('output');
+            
+            // In a production app, you would gather data-color from all stickers here
+            // e.g., document.querySelectorAll('.sticker').map(...) 
+            
+            output.innerHTML = "<strong>Solution found:</strong><br>F R' U L F2 R U2 B' R2 F' (Demo String)";
+        }
+    </script>
+</body>
+</html>
