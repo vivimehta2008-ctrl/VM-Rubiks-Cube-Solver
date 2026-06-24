@@ -181,10 +181,10 @@
             }
         });
 
-        // Initialize background tables
+        // Initialize library tables
         Cube.initSolver();
 
-        function getFaceletColorCharacter(face, index) {
+        function getStickerChar(face, index) {
             const el = document.getElementById(`sticker-${face}-${index}`);
             return colorToFaceMap[el.dataset.color];
         }
@@ -192,28 +192,29 @@
         function solveCube() {
             const output = document.getElementById('output');
             
-            // Standard Kociemba layout order: U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9
-            // Adjust mappings dynamically based on flat 2D UI projections
-            let uStr = "", rStr = "", fStr = "", dStr = "", lStr = "", bStr = "";
+            // Absolute Kociemba standard geometry string mapping format:
+            // U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9
+            // Corrects 2D flat cross representation inconsistencies natively.
+            let faceletString = "";
             
-            for(let i=0; i<9; i++) uStr += getFaceletColorCharacter('U', i);
-            for(let i=0; i<9; i++) rStr += getFaceletColorCharacter('R', i);
-            for(let i=0; i<9; i++) fStr += getFaceletColorCharacter('F', i);
-            for(let i=0; i<9; i++) dStr += getFaceletColorCharacter('D', i);
-            for(let i=0; i<9; i++) lStr += getFaceletColorCharacter('L', i);
+            // 1. Up Face (Standard 0-8)
+            for(let i=0; i<9; i++) faceletString += getStickerChar('U', i);
             
-            // Back face corrections for flattening geometry
-            bStr += getFaceletColorCharacter('B', 2);
-            bStr += getFaceletColorCharacter('B', 1);
-            bStr += getFaceletColorCharacter('B', 0);
-            bStr += getFaceletColorCharacter('B', 5);
-            bStr += getFaceletColorCharacter('B', 4);
-            bStr += getFaceletColorCharacter('B', 3);
-            bStr += getFaceletColorCharacter('B', 8);
-            bStr += getFaceletColorCharacter('B', 7);
-            bStr += getFaceletColorCharacter('B', 6);
+            // 2. Right Face (Standard 0-8)
+            for(let i=0; i<9; i++) faceletString += getStickerChar('R', i);
             
-            const faceletString = uStr + rStr + fStr + dStr + lStr + bStr;
+            // 3. Front Face (Standard 0-8)
+            for(let i=0; i<9; i++) faceletString += getStickerChar('F', i);
+            
+            // 4. Down Face (Standard 0-8)
+            for(let i=0; i<9; i++) faceletString += getStickerChar('D', i);
+            
+            // 5. Left Face (Standard 0-8)
+            for(let i=0; i<9; i++) faceletString += getStickerChar('L', i);
+            
+            // 6. Back Face (Rotated 180 degrees structurally relative to the flat 2D net unfolded view)
+            const bMap = [8, 7, 6, 5, 4, 3, 2, 1, 0];
+            for(let i of bMap) faceletString += getStickerChar('B', i);
 
             try {
                 const parsedCube = Cube.fromString(faceletString);
