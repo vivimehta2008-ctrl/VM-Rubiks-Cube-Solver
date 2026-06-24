@@ -18,7 +18,6 @@
         h1 { margin-bottom: 10px; }
         p { color: #666; margin-bottom: 20px; text-align: center; max-width: 600px; }
 
-        /* Color Palette Styles */
         .palette {
             display: flex;
             gap: 10px;
@@ -41,7 +40,6 @@
         .palette-color:hover { transform: scale(1.1); }
         .palette-color.selected { border-color: #333; }
 
-        /* 2D Cube Net Layout */
         .cube-net {
             display: grid;
             grid-template-columns: repeat(4, 120px);
@@ -69,7 +67,6 @@
             transition: background-color 0.2s;
         }
 
-        /* Controls */
         .solve-btn {
             background-color: #007bff;
             color: white;
@@ -115,11 +112,18 @@
 
     <div class="cube-net">
         <div class="empty"></div>
-        <div class="face" id="face-U"></div> <div class="empty"></div>
+        <div class="face" id="face-U"></div>
+        <div class="empty"></div>
         <div class="empty"></div>
 
-        <div class="face" id="face-L"></div> <div class="face" id="face-F"></div> <div class="face" id="face-R"></div> <div class="face" id="face-B"></div> <div class="empty"></div>
-        <div class="face" id="face-D"></div> <div class="empty"></div>
+        <div class="face" id="face-L"></div>
+        <div class="face" id="face-F"></div>
+        <div class="face" id="face-R"></div>
+        <div class="face" id="face-B"></div>
+
+        <div class="empty"></div>
+        <div class="face" id="face-D"></div>
+        <div class="empty"></div>
         <div class="empty"></div>
     </div>
 
@@ -127,14 +131,12 @@
     <div class="output" id="output">Your solution moves will appear here.</div>
 
     <script>
-        // Order of faces expected by the standard solver string format (U R F D L B)
+        // The standard internal solver format tracking string positions
         const facesOrder = ['U', 'R', 'F', 'D', 'L', 'B'];
         const colors = {
             white: '#ffffff', red: '#b71212', blue: '#124cb7', 
             orange: '#e66e12', green: '#12b730', yellow: '#eed612'
         };
-        
-        // Maps user-friendly color labels to standard facelet single-letter notation
         const colorToFaceMap = {
             'white': 'U', 'red': 'R', 'green': 'F', 
             'yellow': 'D', 'orange': 'L', 'blue': 'B'
@@ -142,7 +144,6 @@
 
         let selectedColor = 'white';
 
-        // Initialize Palette Selection UI
         document.getElementById('palette').addEventListener('click', (e) => {
             if (e.target.classList.contains('palette-color')) {
                 document.querySelectorAll('.palette-color').forEach(el => el.classList.remove('selected'));
@@ -152,7 +153,6 @@
         });
         document.querySelector('[data-color="white"]').classList.add('selected');
 
-        // Build the stickers layout dynamically with exact coordinate maps
         const faceLayouts = {
             'U': ['white','white','white','white','white','white','white','white','white'],
             'L': ['orange','orange','orange','orange','orange','orange','orange','orange','orange'],
@@ -164,20 +164,18 @@
 
         ['U', 'L', 'F', 'R', 'B', 'D'].forEach(face => {
             const faceContainer = document.getElementById(`face-${face}`);
-            
             for (let i = 0; i < 9; i++) {
                 const sticker = document.createElement('div');
                 sticker.classList.add('sticker');
                 sticker.dataset.face = face;
                 sticker.id = `sticker-${face}-${i}`;
                 
-                // Pre-paint the entire solved state layout automatically
                 const startingColor = faceLayouts[face][i];
                 sticker.style.backgroundColor = colors[startingColor];
                 sticker.dataset.color = startingColor;
 
                 sticker.addEventListener('click', (e) => {
-                    if (i === 4) return; // Keep structural center locked
+                    if (i === 4) return; 
                     e.target.style.backgroundColor = colors[selectedColor];
                     e.target.dataset.color = selectedColor;
                 });
@@ -185,43 +183,38 @@
             }
         });
 
-        // Initialize solver engine
+        // Initialize engine directly
         Cube.initSolver();
+
         function solveCube() {
             const output = document.getElementById('output');
             let faceletString = '';
-            let complete = true;
 
-            // Generate facelet string in correct library order: U1..U9 R1..R9 F1..F9 D1..D9 L1..L9 B1..B9
+            // Clean string creation map
             for (let f = 0; f < facesOrder.length; f++) {
                 const faceName = facesOrder[f];
                 for (let i = 0; i < 9; i++) {
                     const sticker = document.getElementById(`sticker-${faceName}-${i}`);
                     const color = sticker ? sticker.dataset.color : null;
-                    
                     if (!color) {
-                        complete = false;
-                        break;
+                        output.innerHTML = "<strong style='color: #b71212;'>Error: Paint all squares!</strong>";
+                        return;
                     }
                     faceletString += colorToFaceMap[color];
                 }
             }
 
-            if (!complete) {
-                output.innerHTML = "<strong style='color: #b71212;'>Error: Please paint all 54 squares before attempting to solve!</strong>";
-                return;
-            }
-
             try {
-                output.innerHTML = "<em>Calculating optimal sequence...</em>";
-                
-                // Read facelet sequence map strings directly into Kociemba solver instance
                 const cubeInstance = Cube.fromString(faceletString);
                 const solutionMoves = cubeInstance.solve();
                 
-                output.innerHTML = `<strong>Solution Found!</strong><br><span style="color:#007bff; font-weight:bold; font-size:18px;">${solutionMoves}</span><br><br><small style="color:#666;">Hold cube with Green in Front and White on Top.</small>`;
+                if (solutionMoves === "") {
+                    output.innerHTML = `<strong>Cube is already solved!</strong><br><span style="color:#28a745;">No moves required.</span>`;
+                } else {
+                    output.innerHTML = `<strong>Solution Found!</strong><br><span style="color:#007bff; font-weight:bold; font-size:18px;">${solutionMoves}</span>`;
+                }
             } catch (error) {
-                output.innerHTML = "<strong style='color: #b71212;'>Error: Invalid Cube Layout!</strong><br><span style='font-size:14px; color:#555;'>The colors you entered are physically impossible on a standard cube. Please double-check edge combinations and corner orientations.</span>";
+                output.innerHTML = "<strong style='color: #b71212;'>Error: Invalid Cube Layout!</strong><br><span style='font-size:14px; color:#555;'>Check corner alignments.</span>";
             }
         }
     </script>
